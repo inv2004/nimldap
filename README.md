@@ -1,6 +1,6 @@
-# nimldap
-
 [![.github/workflows/test.yaml](https://github.com/inv2004/nimldap/actions/workflows/test.yaml/badge.svg)](https://github.com/inv2004/nimldap/actions/workflows/test.yaml)
+
+# nimldap
 
 - [x] sync
 - [x] async
