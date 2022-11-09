@@ -78,17 +78,18 @@ proc search*(ld: LdapASyncRef, filter: string, attrs: openArray[string] = ["*"],
       limit: limit, ctrls: @ctrls, pageSize: pageSize)
 
 proc next*(s: SearchRef): Future[EntryAsync] {.async.} =
-  let (msg, err) = await s.ld.waitResult(s.msgId)
-  if err == 0x65:
-    var cook = cookieFromMsg(s.ld, s.pageSize, msg)
-    if cook != "":
-      let search = s.ld.search(s.filter, s.attrs, LdapScope.SubTree, s.base, 0, [], s.pageSize, cook)
-      s.msgId = search.msgId
-      return await next(s)
+  while true:
+    let (msg, err) = await s.ld.waitResult(s.msgId)
+    if err == 0x65:
+      let cook = cookieFromMsg(s.ld, s.pageSize, msg)
+      if cook != "":
+        let nextSearch = s.ld.search(s.filter, s.attrs, LdapScope.SubTree, s.base, 0, s.ctrls, s.pageSize, cook)
+        s.msgId = nextSearch.msgId
+      else:
+        return EntryAsync(done: true)
     else:
-      return EntryAsync(done: true)
-  var entry = ldap_first_entry(s.ld.r, msg.r)
-  return EntryAsync(entry: entry, ld: s.ld, msg: msg, done: false)
+      let entry = ldap_first_entry(s.ld.r, msg.r)
+      return EntryAsync(entry: entry, ld: s.ld, msg: msg, done: false)
 
 proc count*(ld: LdapAsyncRef, filter: string, scope = LdapScope.SubTree,
     base = rootDC, limit = 0, pageSize = 0): Future[int] {.async.} =
