@@ -93,16 +93,16 @@ proc getDN*(e: AnyEntry): string =
 
 proc `[]`*(e: AnyEntry, attr: string): string =
   let vals = ldap_get_values_len(e.ld.r, e.entry, attr.cstring)
-  if vals.r == nil:
-    raise newException(KeyError, "key not found: " & attr)
+  # if vals.r == nil:
+  #   raise newException(KeyError, "key not found: " & attr)
   var val = vals[result.len]
   if val != nil:
     result = $val[]
 
 proc `{}`*(e: AnyEntry, attr: string): seq[string] =
   let vals = ldap_get_values_len(e.ld.r, e.entry, attr.cstring)
-  if vals.r == nil:
-    raise newException(KeyError, "key not found: " & attr)
+  # if vals.r == nil:
+  #   raise newException(KeyError, "key not found: " & attr)
   var val = vals[result.len]
   while val != nil:
     result.add $val[]
