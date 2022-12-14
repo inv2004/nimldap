@@ -93,12 +93,16 @@ proc getDN*(e: AnyEntry): string =
 
 proc `[]`*(e: AnyEntry, attr: string): string =
   let vals = ldap_get_values_len(e.ld.r, e.entry, attr.cstring)
+  if vals.r == nil:
+    raise newException(KeyError, "key not found: " & attr)
   var val = vals[result.len]
   if val != nil:
     result = $val[]
 
 proc `{}`*(e: AnyEntry, attr: string): seq[string] =
   let vals = ldap_get_values_len(e.ld.r, e.entry, attr.cstring)
+  if vals.r == nil:
+    raise newException(KeyError, "key not found: " & attr)
   var val = vals[result.len]
   while val != nil:
     result.add $val[]
@@ -151,22 +155,26 @@ proc newControls*(ctrls: openArray[Ctrl]): CtrlArr =
   if ctrls.len == 0:
     return
 
-  result.r = cast[ptr UncheckedArray[ptr CtrlInt]](alloc0((ctrls.len+1) * sizeof(ptr CtrlInt)))
+  result.r = cast[ptr UncheckedArray[ptr CtrlInt]](alloc0((ctrls.len+1) *
+      sizeof(ptr CtrlInt)))
 
   for i, ctrl in ctrls:
     let val = newBer(ctrl.val)
-    checkErr ldap_control_create(ctrl.oid.cstring, ctrl.isCritical.int, val, 1, result.r[i])
+    checkErr ldap_control_create(ctrl.oid.cstring, ctrl.isCritical.int, val, 1,
+        result.r[i])
 
 proc newPagingCtrl*(size: int, cookie: string): Ctrl =
   newCtrl(LDAP_PAGED_RESULT_OID_STRING, newPagingValue(size, cookie))
 
-proc newCtrlsWithPage*(ctrls: openArray[Ctrl], pageSize: int, cookie: string): CtrlArr =
+proc newCtrlsWithPage*(ctrls: openArray[Ctrl], pageSize: int,
+    cookie: string): CtrlArr =
   if pageSize > 0:
     newControls(@ctrls & newPagingCtrl(pageSize, cookie))
   else:
     newControls(ctrls)
 
-proc cookieFromMsg*(ld: LdapRef|LdapAsyncRef, pageSize: int, msg: LdapMessageRef): string =
+proc cookieFromMsg*(ld: LdapRef|LdapAsyncRef, pageSize: int,
+    msg: LdapMessageRef): string =
   if pageSize == 0:
     return
   var errcode = 0
