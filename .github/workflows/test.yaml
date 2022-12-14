@@ -8,7 +8,7 @@ jobs:
     strategy:
       matrix:
         nim: [ 'stable' ]
-        os: [ubuntu-latest]
+        os: [ 'ubuntu-22.04' ]
     runs-on: ${{ matrix.os }}
     steps:
       - name: install ldap2 valgrind
