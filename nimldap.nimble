@@ -1,6 +1,6 @@
 # Package
 
-version       = "0.5.0"
+version       = "0.5.1"
 author        = "inv2004"
 description   = "LDAP client bindings"
 license       = "MIT"
