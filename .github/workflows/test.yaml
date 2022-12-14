@@ -7,7 +7,7 @@ jobs:
     timeout-minutes: 10
     strategy:
       matrix:
-        nim: [ '1.6.8' ]
+        nim: [ 'stable' ]
         os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
     steps:
