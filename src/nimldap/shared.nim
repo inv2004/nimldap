@@ -148,6 +148,9 @@ proc values*(vals: BerArrRef): seq[string] =
     result.add $val[]
     val = vals[result.len]
 
+proc `$`*(vals: BerArrRef): string =
+  $values(vals)
+
 proc newCtrl*(oid: string|Extension, val = "", isCritical = true): Ctrl =
   Ctrl(oid: $oid, val: val, isCritical: isCritical)
 

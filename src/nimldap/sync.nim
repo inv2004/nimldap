@@ -26,7 +26,8 @@ proc whoAmI*(ld: LdapRef): string =
 # ldapControl := ldap.NewControlString("1.2.840.113556.1.4.801", true, fmt.Sprintf("%c%c%c%c%c", 48, 3, 2, 1, 7))
 
 proc searchMsg*(ld: LdapRef, filter: string, attrs: openArray[string] = ["*"],
-    scope = LdapScope.SubTree, base = rootDC, limit = 0, ctrls: openArray[Ctrl] = [], pageSize = 0, pageCookie = ""): LdapMessageRef =
+    scope = LdapScope.SubTree, base = rootDC, limit = 0, ctrls: openArray[
+        Ctrl] = [], pageSize = 0, pageCookie = ""): LdapMessageRef =
   let base = if base == rootDC: ld.base else: base
   let attrsC = allocCStringArray(attrs)
   defer: deallocCStringArray(attrsC)
@@ -49,7 +50,8 @@ proc count*(ld: LdapRef, filter: string, scope = LdapScope.SubTree,
       break
 
 iterator search*(ld: LdapRef, filter: string, attrs: openArray[string] = ["*"],
-    scope = LdapScope.SubTree, base = rootDC, limit = 0, ctrls: openArray[Ctrl] = [], pageSize = 0): Entry =
+    scope = LdapScope.SubTree, base = rootDC, limit = 0, ctrls: openArray[
+        Ctrl] = [], pageSize = 0): Entry =
 
   var cookie = ""
   while true:
@@ -75,4 +77,4 @@ when isMainModule:
   echo ld.whoAmI
   for e in ld.search("(objectclass=*)", pageSize = 5):
     echo e.getDN
-  
+
