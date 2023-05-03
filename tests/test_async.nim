@@ -25,10 +25,10 @@ test "whoami":
   check "dn:cn=read-only-admin,dc=example,dc=com" == waitFor ld.whoAmI()
 
 test "count":
-  check 23 == waitFor ld.count("(objectclass=*)")
+  check 21 == waitFor ld.count("(objectclass=*)")
 
 test "count_with_page":
-  check 23 == waitFor ld.count("(objectclass=*)", pageSize = 10)
+  check 21 == waitFor ld.count("(objectclass=*)", pageSize = 10)
 
 test "search":
   var res = newSeq[EntryAsync]()
@@ -38,31 +38,31 @@ test "search":
     if e.done:
       break
     res.add e
-  check 23 == res.len
-  check "dc=example,dc=com" == res[0].getDN()
-  check "cn=admin,dc=example,dc=com" == res[1].getDN()
-  check "uid=jmacy,dc=example,dc=com" == res[22].getDN()
-  check @["uid", "telephoneNumber", "sn", "cn", "objectClass", "mail"] == res[
-      22].attrs()
-  check "jmacy-training@forumsys.com" == res[22]["mail"]
-  check @["inetOrgPerson", "organizationalPerson", "person", "top"] == res[22]{"objectClass"}
+  check 21 == res.len
+  check "dc=example,dc=com" == res[0].dn()
+  check "cn=admin,dc=example,dc=com" == res[1].dn()
+  check "uid=newton,dc=example,dc=com" == res[2].dn()
+  check @["sn", "objectClass", "uid", "mail", "cn"] == res[
+      2].attrs()
+  check "newton@ldap.forumsys.com" == res[2]["mail"]
+  check @["inetOrgPerson", "organizationalPerson", "person", "top"] == res[2]{"objectClass"}
 
 test "search_with_page":
   var res = newSeq[EntryAsync]()
-  let s = ld.search("(objectclass=*)", pageSize=10)
+  let s = ld.search("(objectclass=*)", pageSize = 10)
   while true:
     let e = waitFor s.next()
     if e.done:
       break
     res.add e
-  check 23 == res.len
-  check "dc=example,dc=com" == res[0].getDN()
-  check "cn=admin,dc=example,dc=com" == res[1].getDN()
-  check "uid=jmacy,dc=example,dc=com" == res[22].getDN()
-  check @["uid", "telephoneNumber", "sn", "cn", "objectClass", "mail"] == res[
-      22].attrs()
-  check "jmacy-training@forumsys.com" == res[22]["mail"]
-  check @["inetOrgPerson", "organizationalPerson", "person", "top"] == res[22]{"objectClass"}
+  check 21 == res.len
+  check "dc=example,dc=com" == res[0].dn()
+  check "cn=admin,dc=example,dc=com" == res[1].dn()
+  check "uid=newton,dc=example,dc=com" == res[2].dn()
+  check @["sn", "objectClass", "uid", "mail", "cn"] == res[
+      2].attrs()
+  check "newton@ldap.forumsys.com" == res[2]["mail"]
+  check @["inetOrgPerson", "organizationalPerson", "person", "top"] == res[2]{"objectClass"}
 
 test "iterator":
   var count = 0
@@ -73,7 +73,7 @@ test "iterator":
       break
     for attr, vals in entry:
       inc count
-  check 120 == count
+  check 108 == count
 
 test "iterator_ref":
   var count = 0
@@ -89,7 +89,7 @@ test "iterator_ref":
           inc count
 
   waitFor f()
-  check 190 == count
+  check 170 == count
 
 # test "controls_fail": TEST FAILED
 #   expect LdapException:

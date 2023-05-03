@@ -2,8 +2,8 @@ import bindings
 import shared
 import tinyasn1
 
-export LdapRef, EntryAsync, getDN, attrs, `$`, `[]`, `{}`, len,
-    LdapException, unbind, items, pairs, attrs, values,
+export LdapRef, EntryAsync, dn, attrs, `$`, `[]`, `{}`, len,
+    LdapException, unbind, items, pairs, attrs, values, pretty,
     LdapScope, newCtrl, newPagingCtrl, Extension
 
 proc newLdap*(url: string): LdapRef =
@@ -76,5 +76,5 @@ when isMainModule:
   ld.saslBind login, pass
   echo ld.whoAmI
   for e in ld.search("(objectclass=*)", pageSize = 5):
-    echo e.getDN
+    echo e.dn
 

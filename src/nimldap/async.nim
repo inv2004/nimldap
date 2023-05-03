@@ -1,8 +1,8 @@
 import bindings
 import shared except Entry
 
-export LdapAsyncRef, EntryAsync, getDN, attrs, `$`, `[]`, `{}`, len,
-    LdapException, unbind, items, pairs, attrs, values,
+export LdapAsyncRef, EntryAsync, dn, attrs, `$`, `[]`, `{}`, len,
+    LdapException, unbind, items, pairs, attrs, values, pretty,
     LdapScope, newCtrl, newPagingCtrl, Extension
 
 import std/strutils
@@ -66,7 +66,8 @@ proc whoAmI*(ld: LdapAsyncRef): Future[string] {.async.} =
 
 proc search*(ld: LdapASyncRef, filter: string, attrs: openArray[string] = ["*"],
     scope = LdapScope.SubTree, base = rootDC,
-    limit = 0, ctrls: openArray[Ctrl] = [], pageSize = 0, pageCookie = ""): SearchRef =
+    limit = 0, ctrls: openArray[Ctrl] = [], pageSize = 0,
+        pageCookie = ""): SearchRef =
   let base = if base == rootDC: ld.base else: base
   var msgId: int
   let attrsC = allocCStringArray(attrs)
@@ -74,8 +75,8 @@ proc search*(ld: LdapASyncRef, filter: string, attrs: openArray[string] = ["*"],
   let ctrlsLocal = newCtrlsWithPage(ctrls, pageSize, pageCookie)
   checkErr ldap_search_ext(ld.r, base.cstring, scope.int,
       filter, attrsC, 0, ctrlsLocal.r, nil, nil, limit, msgId)
-  SearchRef(ld: ld, msgId: msgId, filter: filter, attrs: @attrs, scope: scope, base: base,
-      limit: limit, ctrls: @ctrls, pageSize: pageSize)
+  SearchRef(ld: ld, msgId: msgId, filter: filter, attrs: @attrs, scope: scope,
+      base: base, limit: limit, ctrls: @ctrls, pageSize: pageSize)
 
 proc next*(s: SearchRef): Future[EntryAsync] {.async.} =
   while true:
@@ -83,7 +84,8 @@ proc next*(s: SearchRef): Future[EntryAsync] {.async.} =
     if err == 0x65:
       let cook = cookieFromMsg(s.ld, s.pageSize, msg)
       if cook != "":
-        let nextSearch = s.ld.search(s.filter, s.attrs, LdapScope.SubTree, s.base, 0, s.ctrls, s.pageSize, cook)
+        let nextSearch = s.ld.search(s.filter, s.attrs, LdapScope.SubTree,
+            s.base, 0, s.ctrls, s.pageSize, cook)
         s.msgId = nextSearch.msgId
       else:
         return EntryAsync(done: true)

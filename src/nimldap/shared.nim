@@ -88,7 +88,7 @@ proc unbind*(ld: LdapRef|LdapAsyncRef) =
   checkErr ldap_unbind_ext_s(ld.r, nil, nil)
   ld.r = nil
 
-proc getDN*(e: AnyEntry): string =
+proc dn*(e: AnyEntry): string =
   $ldap_get_dn(e.ld.r, e.entry)
 
 proc `[]`*(e: AnyEntry, attr: string): string =
@@ -107,6 +107,20 @@ proc `{}`*(e: AnyEntry, attr: string): seq[string] =
   while val != nil:
     result.add $val[]
     val = vals[result.len]
+
+proc pretty*(e: AnyEntry): string =
+  result.add e.dn() & "\n"
+  for k, v in e:
+    var res = v.values()
+    for i, s in res:
+      var visible = true
+      for c in s:
+        if c notin {' '..'~'}:
+          visible = false
+          break
+      if not visible:
+        res[i] = "0x" & s.toHex()
+    result.add "  " & $k & ": " & res.join(" | ") & "\n"
 
 iterator items*(e: AnyEntry): string =
   var berElem: BerElement

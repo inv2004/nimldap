@@ -41,10 +41,10 @@ test "whoami":
   check "dn:cn=read-only-admin,dc=example,dc=com" == ld.whoAmI()
 
 test "count":
-  check 23 == ld.count("(objectclass=*)")
+  check 21 == ld.count("(objectclass=*)")
 
 test "count_with_page":
-  check 23 == ld.count("(objectclass=*)", pageSize = 10)
+  check 21 == ld.count("(objectclass=*)", pageSize = 10)
 
 test "iterator":
   var eCount = 0
@@ -60,31 +60,31 @@ test "iterator":
       for v in vs:
         inc vCount
         vLenCount += len $v
-  check 23 == eCount
-  check 120 == aCount
-  check 687 == aLenCount
-  check 190 == vCount
-  check 2333 == vLenCount
+  check 21 == eCount
+  check 108 == aCount
+  check 613 == aLenCount
+  check 170 == vCount
+  check 2069 == vLenCount
 
 test "search":
   let res = toSeq(ld.search("(objectclass=*)"))
-  check "dc=example,dc=com" == res[0].getDN()
-  check "cn=admin,dc=example,dc=com" == res[1].getDN()
-  check "uid=jmacy,dc=example,dc=com" == res[22].getDN()
-  check @["uid", "telephoneNumber", "sn", "cn", "objectClass", "mail"] == res[
-      22].attrs()
-  check "jmacy-training@forumsys.com" == res[22]["mail"]
-  check @["inetOrgPerson", "organizationalPerson", "person", "top"] == res[22]{"objectClass"}
+  check "dc=example,dc=com" == res[0].dn()
+  check "cn=admin,dc=example,dc=com" == res[1].dn()
+  check "uid=newton,dc=example,dc=com" == res[2].dn()
+  check @["sn", "objectClass", "uid", "mail", "cn"] == res[
+      2].attrs()
+  check "newton@ldap.forumsys.com" == res[2]["mail"]
+  check @["inetOrgPerson", "organizationalPerson", "person", "top"] == res[2]{"objectClass"}
 
 test "search_with_page":
-  let res = toSeq(ld.search("(objectclass=*)", pageSize=10))
-  check "dc=example,dc=com" == res[0].getDN()
-  check "cn=admin,dc=example,dc=com" == res[1].getDN()
-  check "uid=jmacy,dc=example,dc=com" == res[22].getDN()
-  check @["uid", "telephoneNumber", "sn", "cn", "objectClass", "mail"] == res[
-      22].attrs()
-  check "jmacy-training@forumsys.com" == res[22]["mail"]
-  check @["inetOrgPerson", "organizationalPerson", "person", "top"] == res[22]{"objectClass"}
+  let res = toSeq(ld.search("(objectclass=*)", pageSize = 10))
+  check "dc=example,dc=com" == res[0].dn()
+  check "cn=admin,dc=example,dc=com" == res[1].dn()
+  check "uid=newton,dc=example,dc=com" == res[2].dn()
+  check @["sn", "objectClass", "uid", "mail", "cn"] == res[
+      2].attrs()
+  check "newton@ldap.forumsys.com" == res[2]["mail"]
+  check @["inetOrgPerson", "organizationalPerson", "person", "top"] == res[2]{"objectClass"}
 
 test "controls_fail":
   expect LdapException:
