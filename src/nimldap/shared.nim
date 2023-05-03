@@ -2,6 +2,7 @@ import bindings
 import tinyasn1
 
 import strutils
+import endians
 
 type
   Ldap* = object
@@ -203,3 +204,18 @@ proc cookieFromMsg*(ld: LdapRef|LdapAsyncRef, pageSize: int,
       return readCook(ctrls.r[0])
     inc i
 
+proc sid*(s: string): string =
+  if s.len < 2:
+    raise newException(ValueError, "cannot parse sid: too short")
+  let cnt = s[1].int
+  if s.len != 8 + 4*cnt:
+    raise newException(ValueError, "cannot parse sid: wrong len")
+  var ia: uint64
+  bigEndian64(ia.addr, s[0].unsafeAddr)
+  ia = ia and 0x0000FFFFFFFFFFFF'u64
+  result.add "S-" & $s[0].byte
+  result.add "-" & $ia
+  for x in 0..<cnt:
+    var n: uint32
+    littleEndian32(n.addr, s[8+x*4].unsafeAddr)
+    result.add "-" & $n

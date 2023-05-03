@@ -4,6 +4,7 @@ import tinyasn1
 
 export LdapRef, EntryAsync, dn, attrs, `$`, `[]`, `{}`, len,
     LdapException, unbind, items, pairs, attrs, values, pretty,
+    sid,
     LdapScope, newCtrl, newPagingCtrl, Extension
 
 proc newLdap*(url: string): LdapRef =
@@ -77,4 +78,3 @@ when isMainModule:
   echo ld.whoAmI
   for e in ld.search("(objectclass=*)", pageSize = 5):
     echo e.dn
-
