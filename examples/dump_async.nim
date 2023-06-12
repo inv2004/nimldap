@@ -17,7 +17,7 @@ proc main() {.async.} =
     let entry = await s.next()
     if entry.done:
       break
-    echo entry.getDN()
+    echo entry.dn()
     for attr in entry:
       let vals = entry{attr}
       echo fmt"""  {attr} ({vals.len}): {(vals.join", ")}"""

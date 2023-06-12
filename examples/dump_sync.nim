@@ -11,11 +11,11 @@ ld.saslBind login, pass
 echo ld.whoAmI()
 
 for entry in ld.search("(objectclass=*)", ["+", "*"], LdapScope.Base, ""):
-  echo entry.getDN()
+  echo entry.dn()
   for attr, vals in entry:
     echo fmt"""  {attr} ({vals.len}): {(vals.values().join", ")}"""
 
 for entry in ld.search "(objectclass=*)":
-  echo entry.getDN()
+  echo entry.dn()
   for attr, vals in entry:
     echo fmt"""  {attr} ({vals.len}): {(vals.values().join", ")}"""
