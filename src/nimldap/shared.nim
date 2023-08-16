@@ -62,7 +62,8 @@ proc newLdapException*(err: int, msg = ""): ref LdapException =
 template checkErr*(body: untyped): untyped =
   let err = body
   if err != 0:
-    raise newLdapException(err, "ldap failed")
+    let str = $ldap_err2string(err)
+    raise newLdapException(err, str)
 
 proc setOption*(ld: LdapRef|LdapAsyncRef, opt: LdapOption, value: int) =
   var val = value.int

@@ -163,6 +163,8 @@ proc ldap_controls_free*(ctrls: ptr UncheckedArray[ptr CtrlInt]) {.cdecl,
 proc ldap_controls_dup*(ctrls: ptr UncheckedArray[ptr CtrlInt]): ptr UncheckedArray[ptr CtrlInt] {.cdecl,
     dynlib: libLdap, importc: "ldap_controls_dup".}
 
+proc ldap_err2string*(error: int): cstring {.cdecl, dynlib: libLdap, importc: "ldap_err2string".}
+
 proc ber_bvfree*(ber: BerPtr) {.cdecl, dynlib: libLber, importc: "ber_bvfree".}
 proc ber_free*(ber: BerElement, freebuf: int) {.cdecl, dynlib: libLber,
     importc: "ber_free".}
