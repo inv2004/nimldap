@@ -3,6 +3,7 @@ import tinyasn1
 
 import strutils
 import endians
+import system/ansi_c
 
 type
   Ldap* = object
@@ -174,8 +175,7 @@ proc newControls*(ctrls: openArray[Ctrl]): CtrlArr =
   if ctrls.len == 0:
     return
 
-  result.r = cast[ptr UncheckedArray[ptr CtrlInt]](alloc0((ctrls.len+1) *
-      sizeof(ptr CtrlInt)))
+  result.r = cast[ptr UncheckedArray[ptr CtrlInt]](c_calloc(ctrls.len.csize_t+1, sizeof(ptr CtrlInt).csize_t))
 
   for i, ctrl in ctrls:
     let val = newBer(ctrl.val)
