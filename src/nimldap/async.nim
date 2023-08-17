@@ -17,7 +17,7 @@ const defaultAsyncSleepMs = 10
 
 
 type
-  SearchRef = ref object
+  SearchObjRef = ref object
     ld: LdapAsyncRef
     msgId: int
     msg: LdapMessageRef
@@ -68,7 +68,7 @@ proc whoAmI*(ld: LdapAsyncRef): Future[string] {.async.} =
 proc search*(ld: LdapASyncRef, filter: string, attrs: openArray[string] = ["*"],
     scope = LdapScope.SubTree, base = rootDC,
     limit = 0, ctrls: openArray[Ctrl] = [], pageSize = 0,
-        pageCookie = ""): SearchRef =
+        pageCookie = ""): SearchObjRef =
   let base = if base == rootDC: ld.base else: base
   var msgId: int
   let attrsC = allocCStringArray(attrs)
@@ -76,10 +76,10 @@ proc search*(ld: LdapASyncRef, filter: string, attrs: openArray[string] = ["*"],
   let ctrlsLocal = newCtrlsWithPage(ctrls, pageSize, pageCookie)
   checkErr ldap_search_ext(ld.r, base.cstring, scope.int,
       filter, attrsC, 0, ctrlsLocal.r, nil, nil, limit, msgId)
-  SearchRef(ld: ld, msgId: msgId, filter: filter, attrs: @attrs, scope: scope,
+  SearchObjRef(ld: ld, msgId: msgId, filter: filter, attrs: @attrs, scope: scope,
       base: base, limit: limit, ctrls: @ctrls, pageSize: pageSize)
 
-proc next*(s: SearchRef): Future[EntryAsync] {.async.} =
+proc next*(s: SearchObjRef): Future[EntryAsync] {.async.} =
   while true:
     let (msg, err) = await s.ld.waitResult(s.msgId)
     if err == 0x65:

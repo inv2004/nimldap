@@ -1,6 +1,17 @@
 import bindings
 import shared
 import tinyasn1
+import sequtils
+
+type SearchObj = object
+  ld: LdapRef
+  filter: string
+  attrs: seq[string]
+  scope: LdapScope
+  base: string
+  limit: int
+  ctrls: seq[Ctrl]
+  pageSize: int
 
 export LdapRef, EntryAsync, dn, attrs, `$`, `[]`, `{}`, len,
     LdapException, unbind, items, pairs, attrs, values, pretty,
@@ -26,37 +37,50 @@ proc whoAmI*(ld: LdapRef): string =
 
 # ldapControl := ldap.NewControlString("1.2.840.113556.1.4.801", true, fmt.Sprintf("%c%c%c%c%c", 48, 3, 2, 1, 7))
 
-proc searchMsg*(ld: LdapRef, filter: string, attrs: openArray[string] = ["*"],
-    scope = LdapScope.SubTree, base = rootDC, limit = 0, ctrls: openArray[
-        Ctrl] = [], pageSize = 0, pageCookie = ""): LdapMessageRef =
-  let base = if base == rootDC: ld.base else: base
-  let attrsC = allocCStringArray(attrs)
+proc searchMsg*(self: SearchObj, pageCookie = "", voidAttrs: bool): LdapMessageRef =
+  let base = if self.base == rootDC: self.ld.base else: self.base
+  let attrsC = allocCStringArray(if voidAttrs: @[] else: self.attrs)
   defer: deallocCStringArray(attrsC)
-  let ctrls = newCtrlsWithPage(ctrls, pageSize, pageCookie)
+  let ctrls = newCtrlsWithPage(self.ctrls, self.pageSize, pageCookie)
   let msg = LDAPMessageRef()
 
-  checkErr ldap_search_ext_s(ld.r, base.cstring, scope.int,
-      filter, attrsC, 0, ctrls.r, nil, nil, limit, msg)
+  checkErr ldap_search_ext_s(self.ld.r, base.cstring, self.scope.int,
+      self.filter.cstring, attrsC, 0, ctrls.r, nil, nil, self.limit, msg)
 
   return msg
 
-proc count*(ld: LdapRef, filter: string, scope = LdapScope.SubTree,
-    base = rootDC, limit = 0, pageSize = 0): int =
+proc search*(ld: LdapRef, filter: string, attrs: openArray[string] = ["*"],
+    scope = LdapScope.SubTree, base = rootDC, limit = 0, ctrls: openArray[
+        Ctrl] = [], pageSize = 0): SearchObj =
+  SearchObj(
+    ld: ld,
+    filter: filter,
+    attrs: toSeq[attrs],
+    scope: scope,
+    base: base,
+    limit: limit,
+    ctrls: toSeq[ctrls],
+    pageSize: pageSize
+  )
+
+proc count*(s: SearchObj): int =
   var cookie = ""
   while true:
-    let msg = ld.searchMsg(filter, ["cn"], scope, base, limit, [], pageSize, cookie)
-    result += ldap_count_entries(ld.r, msg.r)
-    cookie = cookieFromMsg(ld, pageSize, msg)
+    let msg = s.searchMsg(cookie, true)
+    result += ldap_count_entries(s.ld.r, msg.r)
+    cookie = cookieFromMsg(s.ld, s.pageSize, msg)
     if cookie == "":
       break
 
-iterator search*(ld: LdapRef, filter: string, attrs: openArray[string] = ["*"],
-    scope = LdapScope.SubTree, base = rootDC, limit = 0, ctrls: openArray[
-        Ctrl] = [], pageSize = 0): Entry =
+proc count*(ld: LdapRef, filter: string, scope = LdapScope.SubTree,
+    base = rootDC, limit = 0, pageSize = 0): int =
+  ld.search(filter, [], scope, base, limit, [], pageSize).count()
 
+iterator items*(s: SearchObj): Entry =
   var cookie = ""
+  let ld = s.ld
   while true:
-    let msg = ld.searchMsg(filter, attrs, scope, base, limit, ctrls, pageSize, cookie)
+    let msg = s.searchMsg(cookie, false)
 
     var entry = ldap_first_entry(ld.r, msg.r)
     while entry != nil:
@@ -64,9 +88,15 @@ iterator search*(ld: LdapRef, filter: string, attrs: openArray[string] = ["*"],
       yield e
       entry = ldap_next_entry(ld.r, entry)
 
-    cookie = cookieFromMsg(ld, pageSize, msg)
+    cookie = cookieFromMsg(ld, s.pageSize, msg)
     if cookie == "":
       break
+
+iterator pairs*(s: SearchObj): (int, Entry) =
+  var i = 0
+  for e in s:
+    yield (i, e)
+    inc i
 
 when isMainModule:
   const host = "ldap://ldap.forumsys.com:389"
