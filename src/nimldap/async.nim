@@ -3,7 +3,7 @@ import shared except Entry
 
 export LdapAsyncRef, EntryAsync, dn, attrs, `$`, `[]`, `{}`, len,
     LdapException, unbind, items, pairs, attrs, values, pretty,
-    sid, contains,
+    sid, contains, getOrEmpty,
     LdapScope, newCtrl, newPagingCtrl, Extension
 
 import std/strutils
