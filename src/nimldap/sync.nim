@@ -15,7 +15,7 @@ type SearchObj = object
 
 export LdapRef, EntryAsync, dn, attrs, `$`, `[]`, `{}`, len,
     LdapException, unbind, items, pairs, attrs, values, pretty,
-    sid,
+    sid, contains,
     LdapScope, newCtrl, newPagingCtrl, Extension
 
 proc newLdap*(url: string): LdapRef =

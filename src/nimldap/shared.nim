@@ -168,6 +168,9 @@ proc values*(vals: BerArrRef): seq[string] =
 proc `$`*(vals: BerArrRef): string =
   $values(vals)
 
+proc contains*(e: AnyEntry, attr: string): bool =
+  attr in e.attrs()
+
 proc newCtrl*(oid: string|Extension, val = "", isCritical = true): Ctrl =
   Ctrl(oid: $oid, val: val, isCritical: isCritical)
 
