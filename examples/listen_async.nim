@@ -25,12 +25,14 @@ proc main() {.async.} =
   let ld = newLdapAsync host
   await ld.saslBind(login, pass)
   echo waitFor ld.whoAmI()
-  let s = ld.search("(objectclass=*)", attrs = @["+", "*", "msDS-ReplAttributeMetaData"], ctrls = ctrls)
+  let s = ld.search("(objectclass=*)", attrs = @["+", "*",
+      "msDS-ReplAttributeMetaData"], ctrls = ctrls)
   while true:
     let entry = await s.next()
     if entry.done:
       break
-    echo entry.getDN()
+    echo entry.dn()
     findChange entry{"msDS-ReplAttributeMetaData"}
 
 waitFor main()
+
