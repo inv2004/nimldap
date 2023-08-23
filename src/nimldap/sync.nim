@@ -37,7 +37,8 @@ proc whoAmI*(ld: LdapRef): string =
 
 # ldapControl := ldap.NewControlString("1.2.840.113556.1.4.801", true, fmt.Sprintf("%c%c%c%c%c", 48, 3, 2, 1, 7))
 
-proc searchMsg*(self: SearchObj, pageCookie = "", voidAttrs: bool): LdapMessageRef =
+proc searchMsg*(self: SearchObj, pageCookie = "",
+    voidAttrs: bool): LdapMessageRef =
   let base = if self.base == rootDC: self.ld.base else: self.base
   let attrsC = allocCStringArray(if voidAttrs: @[] else: self.attrs)
   defer: deallocCStringArray(attrsC)
@@ -60,7 +61,7 @@ proc search*(ld: LdapRef, filter: string, attrs: openArray[string] = ["*"],
     base: base,
     limit: limit,
     ctrls: toSeq[ctrls],
-    pageSize: pageSize
+    pageSize: if pageSize == 0: ld.pageSize else: pageSize
   )
 
 proc count*(s: SearchObj): int =

@@ -9,11 +9,13 @@ type
   Ldap* = object
     r*: ptr LdapInt
     base*: string
+    pageSize*: int
   LdapRef* = ref Ldap
 
   LdapAsync* = object
     r*: ptr LdapInt
     base*: string
+    pageSize*: int
   LdapAsyncRef* = ref LdapAsync
 
   Entry* = ref object
@@ -182,7 +184,8 @@ proc newControls*(ctrls: openArray[Ctrl]): CtrlArr =
   if ctrls.len == 0:
     return
 
-  result.r = cast[ptr UncheckedArray[ptr CtrlInt]](c_calloc(ctrls.len.csize_t+1, sizeof(ptr CtrlInt).csize_t))
+  result.r = cast[ptr UncheckedArray[ptr CtrlInt]](c_calloc(ctrls.len.csize_t+1,
+      sizeof(ptr CtrlInt).csize_t))
 
   for i, ctrl in ctrls:
     let val = newBer(ctrl.val)

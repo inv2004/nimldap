@@ -76,8 +76,17 @@ proc search*(ld: LdapASyncRef, filter: string, attrs: openArray[string] = ["*"],
   let ctrlsLocal = newCtrlsWithPage(ctrls, pageSize, pageCookie)
   checkErr ldap_search_ext(ld.r, base.cstring, scope.int,
       filter, attrsC, 0, ctrlsLocal.r, nil, nil, limit, msgId)
-  SearchObjRef(ld: ld, msgId: msgId, filter: filter, attrs: @attrs, scope: scope,
-      base: base, limit: limit, ctrls: @ctrls, pageSize: pageSize)
+  SearchObjRef(
+    ld: ld,
+    msgId: msgId,
+    filter: filter,
+    attrs: @attrs,
+    scope: scope,
+    base: base,
+    limit: limit,
+    ctrls: @ctrls,
+    pageSize: if pageSize == 0: ld.pageSize else: pageSize
+  )
 
 proc next*(s: SearchObjRef): Future[EntryAsync] {.async.} =
   while true:
